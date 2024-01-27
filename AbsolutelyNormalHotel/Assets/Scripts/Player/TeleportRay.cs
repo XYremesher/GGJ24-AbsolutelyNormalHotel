@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 
-public class PosessRay : MonoBehaviour
+public class TeleportRay : MonoBehaviour
 {
-    [SerializeField] private LayerMask _PosessableLayer;
+    [SerializeField] private LayerMask _TeleportpointLayer;
     [SerializeField] private InputDeviceCharacteristics controllerToUse;
-    [SerializeField] private Transform CavePlayer;
-    [SerializeField] private GameObject PosessRayVisual;
+    [SerializeField] private Transform HMDPlayer;
+    [SerializeField] private GameObject TeleportRayVisual;
 
     [SerializeField] private float TriggerStartThreshold = 0.6f;
     [SerializeField] private float TriggerReleaseThreshold = 0.1f;
@@ -69,19 +69,19 @@ public class PosessRay : MonoBehaviour
                 RaycastHit hit;
 
                 // Casts a ray and checks if we hit an object on the right layer 
-                if (Physics.Raycast(_rayOrigin.position, _rayOrigin.forward, out hit, Mathf.Infinity, _PosessableLayer))
+                if (Physics.Raycast(_rayOrigin.position, _rayOrigin.forward, out hit, Mathf.Infinity, _TeleportpointLayer))
                 {
                     // If this is the first time we hit this object, we save it and trigger some visual changes on it to indicate we are aiming on it (a hover basically)
                     if (_lastHit == null)
                     {
                         _lastHit = hit.collider.gameObject;
-                        _lastHit.GetComponent<PosessableHighlight>().SelectObject(true);
+                        _lastHit.GetComponent<TeleportPointHighlight>().SelectObject(true);
                     }
 
                 }
                 else if (_lastHit != null) // if there is no object hit we make sure last hit is null if it isn't yet
                 {
-                    _lastHit.GetComponent<PosessableHighlight>().SelectObject(false);
+                    _lastHit.GetComponent<TeleportPointHighlight>().SelectObject(false);
                     _lastHit = null;
                 }
 
@@ -90,7 +90,7 @@ public class PosessRay : MonoBehaviour
                 if (rTriggerPressed <= TriggerReleaseThreshold)
                 {
                     Debug.LogWarning("Released trigger");
-                    PosessRayVisual.SetActive(false);
+                    TeleportRayVisual.SetActive(false);
                     _rayActive = false;
 
                     if (_lastHit == null)
@@ -103,9 +103,8 @@ public class PosessRay : MonoBehaviour
                     TeleportTo(_lastHit.transform); // teleport to its position
                     _lastSelected = _lastHit;   // save the selected object we just teleported to, so we can turn it on again after we exit
 
-                    PosessableHighlight posessableHighlight = _lastSelected.GetComponent<PosessableHighlight>();
-                    posessableHighlight.SelectObject(false);  // revert back from the hover visuals
-                    //CavePlayerManager.Instance.SetPossessingObjectForOthers(posessableHighlight.IndexOfObject); // Send the status to other players
+                    TeleportPointHighlight teleportPoint = _lastSelected.GetComponent<TeleportPointHighlight>();
+                    teleportPoint.SelectObject(false);  // revert back from the hover visuals
 
                     _lastSelected.SetActive(false); // and deactivate the object we are currently posessing
                 }
@@ -115,7 +114,7 @@ public class PosessRay : MonoBehaviour
             // If trigger is pressed is isn't already active
             if (rTriggerPressed > TriggerStartThreshold && !_rayActive)
             {
-                PosessRayVisual.SetActive(true);
+                TeleportRayVisual.SetActive(true);
                 _rayActive = true;
             }
         }
@@ -124,8 +123,8 @@ public class PosessRay : MonoBehaviour
     private void TeleportTo(Transform hitObject)
     {
         _rightHand.SendHapticImpulse(0, 0.4f, 0.1f);
-        CavePlayer.position = new Vector3(hitObject.position.x, 0.0f, hitObject.position.z);    // change our position to the objects position, but the height should be 0 always
-        CavePlayer.forward = hitObject.forward; // turn so we are looking forward
+        HMDPlayer.position = new Vector3(hitObject.position.x, 0.0f, hitObject.position.z);    // change our position to the objects position, but the height should be 0 always
+        HMDPlayer.forward = hitObject.forward; // turn so we are looking forward
     }
 
 }

@@ -6,14 +6,15 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.XR;
 
-public enum CPInteractableType { Possessable, Wire, WireSelect}
+public enum InteractableType { Teleportpoint, Grabbable}
 
-public class CP_Raycast : MonoBehaviour
+public class Raycast : MonoBehaviour
 {
     [SerializeField] private LayerMask _InteractableLayers;
     [SerializeField] private LayerMask _CollidableLayers;
     [SerializeField] private InputDeviceCharacteristics controllerToUse;
     [SerializeField] private GameObject PosessRayVisual;
+    [SerializeField] private bool ShowRay = false;
     [SerializeField] private Transform CollisionSphere;
 
     [SerializeField] private float TriggerStartThreshold = 0.6f;
@@ -67,7 +68,7 @@ public class CP_Raycast : MonoBehaviour
 
     private GameObject _hoverHit;
     private GameObject _lastSelected;
-    private CPInteractable _interactable;
+    private Interactable _interactable;
 
     private async Task CastRay()
     {
@@ -80,7 +81,7 @@ public class CP_Raycast : MonoBehaviour
 
 
             // Turns on or off ray visuals
-            if (_rayActive)
+            if (_rayActive && ShowRay)
                 PosessRayVisual.SetActive(true);
             else
                 PosessRayVisual.SetActive(false);
@@ -110,7 +111,7 @@ public class CP_Raycast : MonoBehaviour
 
                     // If we still have an interactable but are hitting a new one (happens if we keep trigger hold while moving around) we replace it
                     if(_interactable != hit.collider.gameObject)
-                        _interactable = hit.collider.gameObject.GetComponent<CPInteractable>();
+                        _interactable = hit.collider.gameObject.GetComponent<Interactable>();
 
                     // If this is the first time we hit this object, we save it and trigger some visual changes on it to indicate we are aiming on it (a hover basically)
                     if (_hoverHit == null)
@@ -138,14 +139,14 @@ public class CP_Raycast : MonoBehaviour
                 }
                 else // if not we check if we really did not hit an interactable lol
                 {
-                    _interactable = hit.collider.gameObject.GetComponent<CPInteractable>();
+                    _interactable = hit.collider.gameObject.GetComponent<Interactable>();
                 }              
 
             }
             else if (_lastSelected != null && rTriggerPressed <= TriggerReleaseThreshold) // If we are still holding trigger, only release the select once we release trigger
             {
                 _interactable.EndSelect(_rightHand);    // deselects the current interactable (could be different if we start select on another object i think?)
-                _lastSelected.GetComponent<CPInteractable>().EndSelect();   // deselects last selected
+                _lastSelected.GetComponent<Interactable>().EndSelect();   // deselects last selected
                 _lastSelected = null;
                 // Only reset the interactable if we don't hover over it anymore
                 if(_hoverHit == null)
@@ -175,10 +176,11 @@ public class CP_Raycast : MonoBehaviour
 
             RaycastHit sphereHit;
 
-            if (Physics.Raycast(_rayOrigin.position, _rayOrigin.forward, out sphereHit, Mathf.Infinity, _CollidableLayers, QueryTriggerInteraction.Ignore))
+            if (Physics.Raycast(_rayOrigin.position, _rayOrigin.forward, out sphereHit, Mathf.Infinity, _CollidableLayers, QueryTriggerInteraction.Ignore)
+                && !_rayActive)
             {
                 CollisionSphere.position = sphereHit.point;
-                CollisionSphere.gameObject.SetActive(true);    // turns on the collision sphere always while hitting objects
+                CollisionSphere.gameObject.SetActive(true);    // turns on the collision sphere while hitting objects and teleport not active
             }
             else
                 CollisionSphere.gameObject.SetActive(false);    // turns off the collision sphere when not
@@ -188,7 +190,13 @@ public class CP_Raycast : MonoBehaviour
         }
     }
 
+
     private void OnDisable()
+    {
+        _checkRay = false;
+    }
+
+    private void OnDestroy()
     {
         _checkRay = false;
     }
