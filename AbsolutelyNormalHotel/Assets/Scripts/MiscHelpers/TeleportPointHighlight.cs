@@ -3,7 +3,7 @@
 
 using UnityEngine;
 
-public class PosessableHighlight : MonoBehaviour
+public class TeleportPointHighlight : MonoBehaviour
 {
     [SerializeField] private Material _selectMat;
 

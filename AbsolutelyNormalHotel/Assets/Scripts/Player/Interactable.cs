@@ -1,15 +1,14 @@
 // Created 05.07.2023 by Krista Plagemann//
-// An interactable object for the cave player. //
-// Reacts to calls from the CP_Raycast when the cave player hovers over or selects this object //
+// An interactable teleportation point. //
 
 
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR;
 
-public class CPInteractable : MonoBehaviour
+public class Interactable : MonoBehaviour
 {
-    [SerializeField] private CPInteractableType InteractableType;
+    [SerializeField] private InteractableType InteractableType;
     [SerializeField] private MeshRenderer _meshRenderer;
     [SerializeField] private Material _hoverMat;
     [SerializeField] private Material _selectMat;
@@ -44,7 +43,7 @@ public class CPInteractable : MonoBehaviour
 
     private void Awake()
     {
-        if (InteractableType == CPInteractableType.Possessable)
+        if (InteractableType == InteractableType.Teleportpoint)
         {
             if(_ToTeleportToObject == null)
                 _ToTeleportToObject = transform;
@@ -71,14 +70,11 @@ public class CPInteractable : MonoBehaviour
 
         switch (InteractableType)
         {
-            case CPInteractableType.Possessable:
+            case InteractableType.Teleportpoint:
                 if(_meshRenderer!=null)
                     _meshRenderer.material = _hoverMat;
                 break;
-            case CPInteractableType.Wire:
-                if (_meshRenderer != null) _meshRenderer.material = _hoverMat;
-                break;
-            case CPInteractableType.WireSelect:
+            case InteractableType.Grabbable:
                 if (_meshRenderer != null) _meshRenderer.material = _hoverMat;
                 break;
         }
@@ -90,7 +86,7 @@ public class CPInteractable : MonoBehaviour
         
         switch (InteractableType)
         {
-            case CPInteractableType.Possessable:
+            case InteractableType.Teleportpoint:
                 if (_meshRenderer != null) _meshRenderer.material = _selectMat;
 
                 // Sends haptic feedback on select
@@ -98,14 +94,10 @@ public class CPInteractable : MonoBehaviour
                     selectingHand.SendHapticImpulse(0, 0.4f, 0.1f);
                 break;
 
-            case CPInteractableType.Wire:
+            case InteractableType.Grabbable:
                 _inputHand = selectingHand;
                 if (_SendStartSelectImpulse)
                     _sendHapticContinuous = true;
-                if (_meshRenderer != null) _meshRenderer.material = _selectMat;
-                break;
-
-            case CPInteractableType.WireSelect:
                 if (_meshRenderer != null) _meshRenderer.material = _selectMat;
                 break;
         }
@@ -117,25 +109,18 @@ public class CPInteractable : MonoBehaviour
     {
         switch (InteractableType)
         {
-            case CPInteractableType.Possessable:
+            case InteractableType.Teleportpoint:
                 if (_meshRenderer != null) _meshRenderer.material = _baseMat;
                 // Only teleport if still hovering over object
                 if (!_hovering)
                     return;
                 _teleportPlayer.TeleportTo(_ToTeleportToObject);
-                // Send the status to other players and disable this object
-                //CavePlayerManager.Instance.SetPossessingObjectForOthers(_IndexOfObject, gameObject);
                 break;
 
-            case CPInteractableType.Wire:
+            case InteractableType.Grabbable:
                 if (_SendStartSelectImpulse)
                     _sendHapticContinuous = false; // turns off the haptic impulse
                 if (_meshRenderer != null) _meshRenderer.material = _baseMat;
-                break;
-
-            case CPInteractableType.WireSelect:
-                if (_meshRenderer != null) _meshRenderer.material = _baseMat;
-                if(!_hovering) return;  // don't fire select event if we aren't hovering anymore
                 break;
         }
         // Sends haptic feedback on select
@@ -149,25 +134,18 @@ public class CPInteractable : MonoBehaviour
     {
         switch (InteractableType)
         {
-            case CPInteractableType.Possessable:
+            case InteractableType.Teleportpoint:
                 if (_meshRenderer != null) _meshRenderer.material = _baseMat;
                 // Only teleport if still hovering over object
                 if (!_hovering)
                     return;
                 _teleportPlayer.TeleportTo(_ToTeleportToObject);
-                // Send the status to other players and disable this object
-                //CavePlayerManager.Instance.SetPossessingObjectForOthers(_IndexOfObject, gameObject);
                 break;
 
-            case CPInteractableType.Wire:
+            case InteractableType.Grabbable:
                 if (_SendStartSelectImpulse)
                     _sendHapticContinuous = false;  // turns off the haptic impulse
                 if (_meshRenderer != null) _meshRenderer.material = _baseMat;
-                break;
-
-            case CPInteractableType.WireSelect:
-                if (_meshRenderer != null) _meshRenderer.material = _baseMat;
-                if (!_hovering) return;  // don't fire select event if we aren't hovering anymore
                 break;
         }
 
@@ -182,18 +160,14 @@ public class CPInteractable : MonoBehaviour
 
         switch (InteractableType)
         {
-            case CPInteractableType.Possessable:
+            case InteractableType.Teleportpoint:
                 if (_meshRenderer != null) _meshRenderer.material = _baseMat;
                 break;
 
-            case CPInteractableType.Wire:
+            case InteractableType.Grabbable:
                 //if (_SendStartSelectImpulse)
                     //_sendHapticContinuous = false; // turns off the haptic impulse
                 if (_meshRenderer != null && _meshRenderer.material != _selectMat) _meshRenderer.material = _baseMat;
-                break;
-
-            case CPInteractableType.WireSelect:
-                if (_meshRenderer != null) _meshRenderer.material = _baseMat;
                 break;
         }
     }

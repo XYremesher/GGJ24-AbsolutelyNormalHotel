@@ -7,6 +7,8 @@ TagManager:
   - Hand
   - RightHand
   - LeftHand
+  - Posessable
+  - TeleportPoint
   layers:
   - Default
   - TransparentFX
@@ -14,12 +16,12 @@ TagManager:
   - 
   - Water
   - UI
-  - Teleport
-  - Posessable
+  - 
+  - TeleportPoint
   - IgnoreEachOther
   - 
-  - Interactable
   - 
+  - Grabbable
   - 
   - 
   - 
@@ -39,7 +41,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - Teleport
   m_SortingLayers:
   - name: Default
     uniqueID: 0
